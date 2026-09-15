@@ -18,7 +18,7 @@ export default function Nav() {
 
   return (
     <header
-      className={`fixed inset-x-0 top-0 z-50 border-b transition-colors ${
+      className={`fixed inset-x-0 top-0 z-[60] border-b transition-colors ${
         isHero
           ? "border-transparent bg-transparent"
           : "bg-bg/70 border-border backdrop-blur-md"

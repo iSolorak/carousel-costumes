@@ -20,7 +20,12 @@ import type { HeroRevealLayerHandle } from "@/components/HeroRevealLayer";
  * which meant the "hidden" image showed fully, permanently, with no
  * interaction at all.
  */
-const LERP = 0.06;
+// Exponential time constant (ms), not a flat per-frame factor — a flat
+// factor applied once per `requestAnimationFrame` converges twice as fast
+// on a 120Hz display as on 60Hz, which is what made the trail feel snappy
+// on high-refresh-rate screens. Chosen to match the old 0.06-per-frame
+// feel at 60Hz (dt ~16.7ms).
+const SMOOTH_TAU_MS = 270;
 
 export function useSpotlightCursor(
   containerRef: RefObject<HTMLElement | null>,
@@ -55,11 +60,19 @@ export function useSpotlightCursor(
     });
     container.addEventListener("pointerenter", handlePointerEnter);
 
-    const loop = () => {
+    let last = performance.now();
+
+    const loop = (now: number) => {
+      // Capped so a backgrounded tab doesn't lurch the trail across the
+      // screen in one jump when it regains focus.
+      const dt = Math.min(now - last, 100);
+      last = now;
+      const factor = 1 - Math.exp(-dt / SMOOTH_TAU_MS);
+
       const dx = mouse.current.x - smooth.current.x;
       const dy = mouse.current.y - smooth.current.y;
-      smooth.current.x += dx * LERP;
-      smooth.current.y += dy * LERP;
+      smooth.current.x += dx * factor;
+      smooth.current.y += dy * factor;
 
       // Skip the (re)paint once the eased position has settled — avoids
       // burning a canvas composite every frame while the pointer is idle.

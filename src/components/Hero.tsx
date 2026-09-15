@@ -2,11 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import HeroRevealLayer, {
   type HeroRevealLayerHandle,
 } from "@/components/HeroRevealLayer";
 import { gsap } from "@/lib/gsap";
+import { useAutoSpotlightTour } from "@/lib/useAutoSpotlightTour";
 import { useSpotlightCursor } from "@/lib/useSpotlightCursor";
 
 export default function Hero({
@@ -18,8 +19,26 @@ export default function Hero({
 }) {
   const rootRef = useRef<HTMLElement>(null);
   const revealRef = useRef<HeroRevealLayerHandle>(null);
+  // Coarse pointer (touch) devices have no cursor to drag the reveal
+  // around, so they get the autonomous wandering torch instead. This is
+  // still server-rendered (a client component pre-renders on the server
+  // for the initial HTML), so the lazy initializer guards for `window`.
+  const [isCoarsePointer, setIsCoarsePointer] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      window.matchMedia("(pointer: coarse)").matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const handleChange = (e: MediaQueryListEvent) =>
+      setIsCoarsePointer(e.matches);
+    mq.addEventListener("change", handleChange);
+    return () => mq.removeEventListener("change", handleChange);
+  }, []);
 
   useSpotlightCursor(rootRef, revealRef);
+  useAutoSpotlightTour(rootRef, revealRef, isCoarsePointer);
 
   // Fades the hero's text out as the page scrolls into the next section,
   // for a smoother hand-off than a hard cut.
