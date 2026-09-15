@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Playfair_Display } from "next/font/google";
-import localFont from "next/font/local";
+import { Alegreya, Geist, Playfair_Display } from "next/font/google";
 import "./globals.css";
 import TorchLight from "@/components/TorchLight";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -11,9 +10,14 @@ const geistSans = Geist({
   display: "swap",
 });
 
-const flaviotte = localFont({
-  src: "../fonts/Flaviotte.woff2",
-  variable: "--font-flaviotte",
+// Replaces the (Latin-only) self-hosted Flaviotte as the site's display
+// font — same warm, characterful, slightly bold boutique feel, but with
+// real Greek + Greek Extended glyph coverage.
+const alegreya = Alegreya({
+  variable: "--font-alegreya",
+  subsets: ["latin", "greek"],
+  weight: ["700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -62,7 +66,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${flaviotte.variable} ${playfairDisplay.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${alegreya.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-fg">
         <TorchLight />

@@ -68,13 +68,13 @@ export default function Hero({
       <div className="pointer-events-none absolute top-[14%] right-0 left-0 z-50 flex flex-col items-center px-5 text-center">
         <h1 className="leading-[0.95] text-white">
           <span
-            className="hero-anim hero-reveal block font-playfair text-5xl font-normal italic sm:text-7xl md:text-8xl"
+            className="hero-anim hero-reveal block font-display text-5xl font-normal italic sm:text-7xl md:text-8xl"
             style={{ letterSpacing: "-0.05em", animationDelay: "0.25s" }}
           >
             ΠΑΙΔΙΚΕΣ
           </span>
           <span
-            className="hero-anim hero-reveal -mt-1 block text-5xl font-normal sm:text-7xl md:text-8xl"
+            className="hero-anim hero-reveal -mt-1 block font-display text-5xl font-normal sm:text-7xl md:text-8xl"
             style={{ letterSpacing: "-0.08em", animationDelay: "0.42s" }}
           >
             ΣΤΟΛΕΣ

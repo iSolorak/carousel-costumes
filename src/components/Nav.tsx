@@ -6,9 +6,9 @@ import { useState } from "react";
 import { SITE_NAME } from "@/lib/site";
 
 const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/catalogue", label: "Catalogue" },
-  { href: "/about", label: "About" },
+  { href: "/", label: "ΑΡΧΙΚΗ" },
+  { href: "/catalogue", label: "ΚΑΤΑΛΟΓΟΣ" },
+  { href: "/about", label: "ΓΙΑ ΕΜΑΣ" },
 ];
 
 export default function Nav() {
@@ -81,14 +81,14 @@ export default function Nav() {
         )}
 
         <div className="flex items-center gap-3">
-          {isHero && (
+          {/* {isHero && (
             <Link
               href="/catalogue"
               className="hidden rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-gray-900 hover:bg-gray-100 md:block"
             >
               Shop Now
             </Link>
-          )}
+          )} */}
 
           <button
             type="button"
