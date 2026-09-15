@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type LightboxCostume = {
   title: string;
@@ -9,16 +9,47 @@ export type LightboxCostume = {
   image: string;
 };
 
+// How long the close (fade + settle) transition takes, in ms — must match
+// the duration classes below so the DOM node isn't torn out mid-animation.
+const EXIT_DURATION_MS = 300;
+const TRANSITION =
+  "transition-all duration-300 ease-[cubic-bezier(0.16,1,0.3,1)]";
+
 export default function Lightbox({
   costume,
   onClose,
 }: {
-  costume: LightboxCostume;
+  costume: LightboxCostume | null;
   onClose: () => void;
 }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  // Kept mounted for a beat after `costume` goes null so the close
+  // transition has something to animate — otherwise the modal would just
+  // vanish the instant it's dismissed, same as it popping in with no
+  // transition at all.
+  const [renderedCostume, setRenderedCostume] =
+    useState<LightboxCostume | null>(costume);
+  const [visible, setVisible] = useState(false);
 
   useEffect(() => {
+    if (costume) {
+      setRenderedCostume(costume);
+      // Mount in the hidden state first, then flip to visible on the next
+      // frame so the browser actually has something to transition from.
+      const raf = requestAnimationFrame(() => setVisible(true));
+      return () => cancelAnimationFrame(raf);
+    }
+
+    setVisible(false);
+    const timeout = setTimeout(
+      () => setRenderedCostume(null),
+      EXIT_DURATION_MS
+    );
+    return () => clearTimeout(timeout);
+  }, [costume]);
+
+  useEffect(() => {
+    if (!renderedCostume) return;
     document.body.style.overflow = "hidden";
     window.dispatchEvent(new Event("app:lenis-stop"));
     closeButtonRef.current?.focus();
@@ -33,14 +64,18 @@ export default function Lightbox({
       window.dispatchEvent(new Event("app:lenis-start"));
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [onClose]);
+  }, [renderedCostume, onClose]);
+
+  if (!renderedCostume) return null;
 
   return (
     <div
       role="dialog"
       aria-modal="true"
-      aria-label={costume.title}
-      className="fixed inset-0 z-[100] flex items-center justify-center bg-bg/90 p-4 backdrop-blur-sm sm:p-8"
+      aria-label={renderedCostume.title}
+      className={`fixed inset-0 z-[100] flex items-center justify-center bg-bg/90 p-4 backdrop-blur-sm sm:p-8 ${TRANSITION} ${
+        visible ? "opacity-100" : "opacity-0"
+      }`}
       onClick={onClose}
     >
       <button
@@ -54,13 +89,17 @@ export default function Lightbox({
       </button>
 
       <div
-        className="flex w-full max-w-4xl flex-col gap-6 sm:flex-row sm:items-center"
+        className={`flex w-full max-w-4xl flex-col gap-6 sm:flex-row sm:items-center ${TRANSITION} ${
+          visible
+            ? "translate-y-0 scale-100 opacity-100"
+            : "translate-y-4 scale-95 opacity-0"
+        }`}
         onClick={(event) => event.stopPropagation()}
       >
         <div className="relative aspect-[3/4] w-full max-w-sm shrink-0 self-center overflow-hidden rounded-sm sm:max-w-md">
           <Image
-            src={costume.image}
-            alt={costume.title}
+            src={renderedCostume.image}
+            alt={renderedCostume.title}
             fill
             sizes="(min-width: 640px) 448px, 90vw"
             className="object-cover"
@@ -69,9 +108,11 @@ export default function Lightbox({
 
         <div className="max-w-sm">
           <h2 className="font-display text-2xl text-fg sm:text-3xl">
-            {costume.title}
+            {renderedCostume.title}
           </h2>
-          <p className="mt-3 text-sm text-muted">{costume.description}</p>
+          <p className="mt-3 text-sm text-muted">
+            {renderedCostume.description}
+          </p>
         </div>
       </div>
     </div>

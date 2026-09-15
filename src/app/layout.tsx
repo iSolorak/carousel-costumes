@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Fredoka, Playfair_Display } from "next/font/google";
+import { Geist, Playfair_Display } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
 import TorchLight from "@/components/TorchLight";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -10,10 +11,9 @@ const geistSans = Geist({
   display: "swap",
 });
 
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+const flaviotte = localFont({
+  src: "../fonts/Flaviotte.woff2",
+  variable: "--font-flaviotte",
   display: "swap",
 });
 
@@ -54,15 +54,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#fffaf1",
-  colorScheme: "light",
+  themeColor: "#2a1830",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${fredoka.variable} ${playfairDisplay.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${flaviotte.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-bg text-fg">
         <TorchLight />

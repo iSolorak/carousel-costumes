@@ -4,9 +4,13 @@ import Image from "next/image";
 import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 
 const SPOTLIGHT_R = 260;
+// Exponential time constant (ms) for how fast a painted area fades back to
+// dark once the cursor moves on. Roughly: stays bright while fresh, is
+// visibly dimmer after ~1 fade window, and is essentially gone after ~3.
+const FADE_TAU_MS = 900;
 
 export interface HeroRevealLayerHandle {
-  /** Paints a new reveal stamp at (x, y) — additive, never erases earlier stamps. */
+  /** Paints a new reveal stamp at (x, y) — it fades on its own afterward. */
   paintAt: (x: number, y: number) => void;
 }
 
@@ -14,11 +18,11 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
   function HeroRevealLayer({ image }, ref) {
     const wrapperRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
-    // Offscreen — accumulates the spotlight alpha, never cleared, never
-    // attached to the DOM. Kept separate from the visible canvas so
-    // compositing the reveal image against it doesn't require re-encoding
-    // anything (no toDataURL round trip), which is what previously made
-    // the trail stutter instead of gliding.
+    // Offscreen — accumulates the spotlight alpha and continuously fades
+    // it back out, never attached to the DOM. Kept separate from the
+    // visible canvas so compositing the reveal image against it doesn't
+    // require re-encoding anything (no toDataURL round trip), which is
+    // what previously made the trail stutter instead of gliding.
     const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const imgRef = useRef<HTMLImageElement>(null);
 
@@ -82,10 +86,43 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
       return () => observer.disconnect();
     }, []);
 
+    // Runs for as long as the layer is mounted, independent of pointer
+    // activity, so the mask keeps fading back to dark even after the
+    // cursor stops moving (and the display canvas keeps repainting to
+    // show that fade).
+    useEffect(() => {
+      let rafId: number;
+      let last = performance.now();
+
+      const tick = (now: number) => {
+        // Capped so a backgrounded tab doesn't erase the whole mask in
+        // one jump when it regains focus.
+        const dt = Math.min(now - last, 100);
+        last = now;
+
+        const mask = maskCanvasRef.current;
+        const maskCtx = mask?.getContext("2d");
+        if (mask && maskCtx) {
+          const eraseAlpha = 1 - Math.exp(-dt / FADE_TAU_MS);
+          maskCtx.save();
+          maskCtx.globalCompositeOperation = "destination-out";
+          maskCtx.fillStyle = `rgba(0,0,0,${eraseAlpha})`;
+          maskCtx.fillRect(0, 0, mask.width, mask.height);
+          maskCtx.restore();
+        }
+
+        drawComposite();
+        rafId = requestAnimationFrame(tick);
+      };
+      rafId = requestAnimationFrame(tick);
+
+      return () => cancelAnimationFrame(rafId);
+    }, []);
+
     useImperativeHandle(ref, () => ({
-      // Never clears the mask — each stamp adds to whatever's already
-      // painted, so the reveal only ever grows: once an area is revealed it
-      // stays revealed, like scratching a scratch card.
+      // Adds a fresh stamp on top of whatever's already painted — the
+      // fade loop above is what makes it recede again once the cursor
+      // stops revisiting this spot.
       paintAt(x: number, y: number) {
         const mask = maskCanvasRef.current;
         const maskCtx = mask?.getContext("2d");
@@ -110,8 +147,8 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
         maskCtx.beginPath();
         maskCtx.arc(x, y, SPOTLIGHT_R, 0, Math.PI * 2);
         maskCtx.fill();
-
-        drawComposite();
+        // No immediate redraw needed — the fade loop above repaints every
+        // frame anyway and will pick this stamp up on the next tick.
       },
     }));
 
