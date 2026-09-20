@@ -3,6 +3,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import {
   SESSION_COOKIE,
@@ -41,6 +42,29 @@ export async function loginAction(
   });
 
   redirect("/admin/dashboard");
+}
+
+export async function generateCredentialsAction(
+  _prevState: { error?: string; envBlock?: string } | undefined,
+  formData: FormData
+) {
+  const username = String(formData.get("username") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!username) {
+    return { error: "Choose a username." };
+  }
+  if (password.length < 8) {
+    return { error: "Password must be at least 8 characters." };
+  }
+
+  const hash = await bcrypt.hash(password, 10);
+  // Next.js expands $VAR in .env values, which would mangle the bcrypt hash
+  // ($2b$10$...). Escape every "$" so it loads verbatim.
+  const escapedHash = hash.replace(/\$/g, "\\$");
+  const envBlock = `ADMIN_USERNAME="${username}"\nADMIN_PASSWORD_HASH="${escapedHash}"`;
+
+  return { envBlock };
 }
 
 export async function logoutAction() {

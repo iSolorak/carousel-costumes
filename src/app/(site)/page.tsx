@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import FadeInSection from "@/components/FadeInSection";
 import Hero from "@/components/Hero";
+import PageBackdrop from "@/components/PageBackdrop";
 import ProductCarousel from "@/components/ProductCarousel";
 import { getFeaturedCostumes } from "@/lib/costumes";
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from "@/lib/site";
@@ -34,15 +35,19 @@ export default async function HomePage() {
 
       {featured.length > 0 && <ProductCarousel costumes={featured} />}
 
-      <FadeInSection className="flex flex-col items-center gap-6 px-5 py-24 text-center">
-        <h2 className="font-display text-2xl text-fg sm:text-3xl">
-          See the full collection
-        </h2>
+      <PageBackdrop />
+      <FadeInSection className="flex justify-center px-5 py-20 sm:py-28">
         <Link
           href="/catalogue"
-          className="border border-accent px-6 py-3 text-sm tracking-widest text-accent transition-colors hover:bg-accent hover:text-bg"
+          className="group inline-flex items-center gap-3 rounded-full bg-accent px-9 py-4 text-sm font-medium tracking-wide text-white shadow-lg shadow-accent/30 transition-all hover:scale-[1.03] hover:bg-accent/90 hover:shadow-xl hover:shadow-accent/40 active:scale-95"
         >
-          VIEW CATALOGUE
+          View the full collection
+          <span
+            aria-hidden
+            className="transition-transform duration-300 group-hover:translate-x-1"
+          >
+            →
+          </span>
         </Link>
       </FadeInSection>
     </>

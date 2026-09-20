@@ -71,12 +71,31 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
 
       const resize = () => {
         const mask = maskCanvasRef.current;
-        canvas.width = wrapper.clientWidth;
-        canvas.height = wrapper.clientHeight;
-        if (mask) {
-          mask.width = wrapper.clientWidth;
-          mask.height = wrapper.clientHeight;
+        const newWidth = wrapper.clientWidth;
+        const newHeight = wrapper.clientHeight;
+
+        // Resizing a canvas always wipes its pixels, and on mobile this
+        // ResizeObserver fires constantly as the browser chrome (address
+        // bar) hides/shows during scroll — since the hero is 100dvh, that
+        // alone used to blank the accumulated spotlight trail on every
+        // scroll tick, flashing the reveal image back to black. Snapshot
+        // the mask first and stretch it back in so the trail survives.
+        if (mask && mask.width > 0 && mask.height > 0) {
+          const snapshot = document.createElement("canvas");
+          snapshot.width = mask.width;
+          snapshot.height = mask.height;
+          snapshot.getContext("2d")?.drawImage(mask, 0, 0);
+
+          mask.width = newWidth;
+          mask.height = newHeight;
+          mask.getContext("2d")?.drawImage(snapshot, 0, 0, newWidth, newHeight);
+        } else if (mask) {
+          mask.width = newWidth;
+          mask.height = newHeight;
         }
+
+        canvas.width = newWidth;
+        canvas.height = newHeight;
         drawComposite();
       };
       resize();

@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
+import Link from "next/link";
 import { loginAction } from "@/app/admin/actions";
 
 export default function AdminLoginPage() {
@@ -53,6 +54,10 @@ export default function AdminLoginPage() {
           {pending ? "LOGGING IN…" : "LOG IN"}
         </button>
       </form>
+
+      <Link href="/admin/setup" className="text-sm text-muted hover:text-accent">
+        Need to set up or reset admin credentials?
+      </Link>
     </div>
   );
 }

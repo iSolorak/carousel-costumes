@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import {
   CONTACT_PHONE_DISPLAY,
@@ -10,7 +11,21 @@ const YEAR = new Date().getFullYear();
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-bg-raised/60 px-5 py-14 sm:px-8">
+    <footer className="relative isolate overflow-hidden border-t border-accent/20 bg-bg px-5 py-14 sm:px-8">
+      <Image
+        src="/bg/footer-stage.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="-z-10 object-cover object-bottom"
+      />
+      {/* Fades the stage in from the page above and darkens the floor
+          under the copyright row so small text stays readable. */}
+      <div
+        aria-hidden
+        className="absolute inset-0 -z-10 bg-gradient-to-b from-bg via-bg/30 to-black/45"
+      />
+
       <div className="mx-auto grid max-w-6xl gap-10 sm:grid-cols-3">
         <div>
           <p className="font-display text-lg text-fg">{SITE_NAME}</p>
@@ -48,7 +63,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="mx-auto mt-10 flex max-w-6xl flex-col items-start gap-2 border-t border-border pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
+      <div className="mx-auto mt-10 flex max-w-6xl flex-col items-start gap-2 border-t border-white/10 pt-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
         <p>
           © {YEAR} {SITE_NAME}. All rights reserved.
         </p>

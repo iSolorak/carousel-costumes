@@ -68,7 +68,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${alegreya.variable} ${playfairDisplay.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-bg text-fg">
+      <body className="min-h-full flex flex-col text-fg">
         <TorchLight />
         {children}
       </body>

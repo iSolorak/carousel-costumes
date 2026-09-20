@@ -52,19 +52,26 @@ export function useAutoSpotlightTour(
       return;
     }
 
-    const start = toPx(WAYPOINTS[0].x, WAYPOINTS[0].y);
-    const point = { x: start.x, y: start.y };
+    // Tweened as fractions of the container, with pixels resolved live from
+    // the container's current box on every update — not baked to pixel
+    // targets from the box at mount time. Mobile viewport height shifts
+    // constantly as the browser chrome hides/shows during scroll, and
+    // frozen targets would drift out of sync with the resized reveal
+    // canvas, painting the torch in the wrong spot.
+    const point = { fx: WAYPOINTS[0].x, fy: WAYPOINTS[0].y };
 
     const tl = gsap.timeline({ repeat: -1 });
     WAYPOINTS.forEach((wp, i) => {
       const next = WAYPOINTS[(i + 1) % WAYPOINTS.length];
-      const target = toPx(next.x, next.y);
       tl.to(point, {
-        x: target.x,
-        y: target.y,
+        fx: next.x,
+        fy: next.y,
         duration: next.duration,
         ease: "sine.inOut",
-        onUpdate: () => revealRef.current?.paintAt(point.x, point.y),
+        onUpdate: () => {
+          const { x, y } = toPx(point.fx, point.fy);
+          revealRef.current?.paintAt(x, y);
+        },
       });
     });
 

@@ -127,18 +127,16 @@ export default function ProductCarousel({
 
   return (
     <section className="relative flex h-svh min-h-[560px] w-full flex-col items-center justify-center overflow-hidden bg-black py-10">
-      <div className="absolute inset-[-15%]">
-        <Image
-          src="/hero/spotlight-base.jpg"
-          alt=""
-          fill
-          sizes="130vw"
-          className="object-cover"
-          style={{ filter: "blur(10px) brightness(0.5)" }}
-        />
-      </div>
+      <Image
+        src="/bg/carousel-stage.webp"
+        alt=""
+        fill
+        sizes="100vw"
+        className="backdrop-dim object-cover"
+      />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-transparent to-black/70" />
+      {/* Blends the vivid stage into the dark hero above and footer below. */}
+      <div className="absolute inset-0 bg-gradient-to-b from-bg/70 via-transparent to-bg/80" />
 
       <div
         ref={viewportRef}
@@ -177,9 +175,9 @@ export default function ProductCarousel({
                     goTo(i);
                   }
                 }}
-                className={`group w-64 shrink-0 cursor-pointer overflow-hidden rounded-3xl border bg-white/5 backdrop-blur-sm transition-all duration-500 ease-out sm:w-72 ${
+                className={`group w-64 shrink-0 cursor-pointer overflow-hidden rounded-3xl border bg-[#1a0f20]/70 backdrop-blur-md transition-all duration-500 ease-out sm:w-72 ${
                   isActive
-                    ? "scale-100 border-accent/50 opacity-100 shadow-[0_0_0_1px_rgba(201,64,31,0.25),0_30px_60px_-15px_rgba(0,0,0,0.7),0_0_50px_-10px_rgba(201,64,31,0.35)]"
+                    ? "scale-100 border-accent/50 opacity-100 shadow-[0_0_0_1px_rgba(236,72,153,0.25),0_30px_60px_-15px_rgba(0,0,0,0.7),0_0_50px_-10px_rgba(236,72,153,0.4)]"
                     : "scale-90 border-white/10 opacity-50 shadow-2xl shadow-black/60 hover:scale-[0.93] hover:opacity-70"
                 }`}
               >

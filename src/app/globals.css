@@ -34,8 +34,9 @@ html {
   color-scheme: dark;
 }
 
+/* No background here: html already paints --color-bg, and an opaque body
+   would hide the fixed page backdrops that sit at a negative z-index. */
 body {
-  background: var(--color-bg);
   color: var(--color-fg);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
@@ -116,4 +117,9 @@ body {
 
 .no-scrollbar::-webkit-scrollbar {
   display: none;
+}
+
+/* Tones down bright generated backdrops so cards and text stay the focus. */
+.backdrop-dim {
+  filter: brightness(0.55) saturate(0.9) contrast(1.05);
 }
