@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { CONTACT_PHONE_DISPLAY, CONTACT_PHONE_HREF } from "@/lib/site";
 
 export type LightboxCostume = {
   title: string;
@@ -112,6 +113,30 @@ export default function Lightbox({
           </h2>
           <p className="mt-3 text-sm text-muted">
             {renderedCostume.description}
+          </p>
+
+          <a
+            href={`tel:${CONTACT_PHONE_HREF}`}
+            className="group mt-6 inline-flex items-center gap-3 rounded-full bg-accent px-6 py-3 text-sm font-medium text-white shadow-lg shadow-accent/30 transition-all hover:scale-[1.03] hover:bg-accent/90 hover:shadow-xl hover:shadow-accent/40 active:scale-95"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2Z" />
+            </svg>
+            Call to order
+            <span className="text-white/80">{CONTACT_PHONE_DISPLAY}</span>
+          </a>
+          <p className="mt-3 text-xs text-muted">
+            Made to order — call to ask about this costume.
           </p>
         </div>
       </div>
