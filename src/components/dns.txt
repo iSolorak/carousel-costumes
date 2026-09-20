@@ -1,0 +1,56 @@
+zone "carouselcostumes.gr" {
+    type master;
+    file "/etc/bind/db.carouselcostumes.gr";
+};
+
+
+;
+; BIND data file for carouselcostumes.gr
+;
+
+$TTL 604800
+
+@       IN      SOA     ns1.solorak.xyz. admin.carouselcostumes.gr. (
+                            2026072401 ; Serial
+                            604800     ; Refresh
+                            86400      ; Retry
+                            2419200    ; Expire
+                            3600     ; Negative Cache TTL
+                        )
+
+; Authoritative nameservers
+@       IN      NS      ns1.solorak.xyz.
+@       IN      NS      ns2.solorak.xyz.
+
+; Main domain
+@       IN      A       217.182.206.143
+
+
+
+server {
+    server_name carouselcostumes.gr;
+
+    # Static Next.js assets — long cache, immutable, fingerprinted by Next.
+    location /_next/static/ {
+        proxy_pass http://127.0.0.1:3026;
+        add_header Cache-Control "public, max-age=31536000, immutable";
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:3026;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    client_max_body_size 15M; # allow costume image uploads through the admin
+
+}
+
+
+; Google verification
+@       IN      TXT     "google-site-verification=NNhRbacev4p17F1rlyf8SVFCXknFT26-0jHJa4LuSqM"
