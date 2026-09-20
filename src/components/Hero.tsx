@@ -106,8 +106,7 @@ export default function Hero({
         style={{ animationDelay: "0.7s" }}
       >
         <p className="text-sm leading-relaxed text-white/80">
-          Every costume we sew starts as a story a child imagines first, then
-          becomes real — stitch by stitch, one hero at a time.
+         Κάθε στολή φτιαγμένη με μεράκι.
         </p>
       </div>
 
@@ -116,14 +115,13 @@ export default function Hero({
         style={{ animationDelay: "0.85s" }}
       >
         <p className="text-xs leading-relaxed text-white/80 sm:text-sm">
-          Browse the full collection and find the character your child
-          can&apos;t stop imagining, from caped heroes to crowned princesses.
+          Ανακάλυψε μοναδικές στολές με χαρακτήρα και ποιότητα.
         </p>
         <Link
           href="/catalogue"
           className="rounded-full bg-accent px-7 py-3 text-sm font-medium text-white transition-all hover:scale-[1.03] hover:bg-accent/90 hover:shadow-lg hover:shadow-accent/30 active:scale-95"
         >
-          Start Exploring
+          Βρες τη στολή σου.
         </Link>
       </div>
     </section>

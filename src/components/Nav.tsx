@@ -36,13 +36,29 @@ export default function Nav() {
         >
           {isHero && (
             <svg
-              width="26"
-              height="26"
-              viewBox="0 0 256 256"
+              width="32"
+              height="32"
+              viewBox="0 0 32 32"
               fill="#ffffff"
               aria-hidden
             >
-              <path d="M 256 256 L 128 256 L 0 128 L 128 128 Z M 256 128 L 128 128 L 0 0 L 128 0 Z" />
+              {/* Merry-go-round: pennant, scalloped canopy, poles, base. */}
+              <path
+                d="M16 2.5V6"
+                stroke="#ffffff"
+                strokeWidth="1.4"
+                strokeLinecap="round"
+              />
+              <path d="M16 2.5 22 4.4 16 6.3Z" fill="#ec4899" />
+              <path d="M16 6 3 14a3.25 3.25 0 0 0 6.5 0 3.25 3.25 0 0 0 6.5 0 3.25 3.25 0 0 0 6.5 0 3.25 3.25 0 0 0 6.5 0Z" />
+              <path
+                d="M6.25 15.5v8.5M12.75 16.5v7.5M19.25 16.5v7.5M25.75 15.5v8.5"
+                stroke="#ffffff"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+                fill="none"
+              />
+              <rect x="2.5" y="24.5" width="27" height="3.5" rx="1.75" />
             </svg>
           )}
           {isHero ? "Carousel" : SITE_NAME}
