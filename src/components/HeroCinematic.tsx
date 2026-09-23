@@ -32,7 +32,17 @@ const FOOTAGE_END = 0.88;
 // ones needed to paint something immediately.
 const LOAD_CONCURRENCY = 6;
 
-const CHAPTERS = ["Στο σκοτάδι", "Τα φώτα", "Η σκηνή σου"];
+// Where the scrubbed stills hand over to the looping confetti video. The
+// scrub is finished by FOOTAGE_END, so the crossfade rides the tail of the
+// scroll and is complete before the closing act settles.
+const LOOP_FADE_IN = 0.78;
+const LOOP_FADE_FULL = 0.93;
+// Point at which the loop starts buffering. Late enough that it never
+// competes with the frame sequence for bandwidth, early enough that there
+// is most of a screen of scrolling left to fetch it in.
+const LOOP_PRELOAD_AT = 0.5;
+
+const CHAPTERS = [];
 
 /**
  * The homepage's scroll-told opening: a pinned stage that plays a
@@ -56,6 +66,9 @@ export default function HeroCinematic() {
   const railRef = useRef<HTMLSpanElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
   const chapterRefs = useRef<Array<HTMLLIElement | null>>([]);
+
+  const loopVideoRef = useRef<HTMLVideoElement>(null);
+  const loopArmedRef = useRef(false);
 
   const imagesRef = useRef<HTMLImageElement[]>([]);
   const drawnRef = useRef(-1);
@@ -165,6 +178,29 @@ export default function HeroCinematic() {
       revealBoxRef.current.style.transform = `scale(${1 + p * 0.1})`;
     }
 
+    // The scrub ends on a still frame, which drains the energy right at the
+    // payoff — so the closing act crossfades from the last frame into a
+    // looping shot of the same stage with the confetti still falling. Both
+    // are the identical locked-off scene, so only the confetti differs and
+    // the crossfade reads as the stage simply coming to life.
+    const video = loopVideoRef.current;
+    if (video) {
+      if (!loopArmedRef.current && p > LOOP_PRELOAD_AT) {
+        loopArmedRef.current = true;
+        video.preload = "auto";
+        video.load();
+      }
+      const o = ramp(p, LOOP_FADE_IN, LOOP_FADE_FULL);
+      video.style.opacity = o.toFixed(3);
+      if (o > 0 && video.paused) {
+        // Rejects when the tab has never been interacted with; the poster
+        // still shows the lit stage, so there is nothing to recover from.
+        void video.play().catch(() => {});
+      } else if (o === 0 && !video.paused) {
+        video.pause();
+      }
+    }
+
     // The stage gets brighter and busier than white text can hold its own
     // against, so the scrim behind the copy comes up with the lights.
     if (scrimRef.current) {
@@ -233,6 +269,24 @@ export default function HeroCinematic() {
     if (railRef.current) railRef.current.style.transform = "scaleY(1)";
   }, [reduced]);
 
+  // Once the scroll has carried on past the hero the loop is still playing
+  // behind everything below it, decoding frames nobody can see. Stop it
+  // while the stage is off screen and pick it back up on the way in.
+  useEffect(() => {
+    const stage = stageRef.current;
+    const video = loopVideoRef.current;
+    if (reduced || !stage || !video) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (!entry.isIntersecting) video.pause();
+      else if (Number(video.style.opacity || "0") > 0) {
+        void video.play().catch(() => {});
+      }
+    });
+    observer.observe(stage);
+    return () => observer.disconnect();
+  }, [reduced]);
+
   return (
     <section
       ref={rootRef}
@@ -250,6 +304,25 @@ export default function HeroCinematic() {
           aria-hidden
           className="absolute inset-0 z-10 h-full w-full"
         />
+
+        {!reduced && (
+          <video
+            ref={loopVideoRef}
+            aria-hidden
+            muted
+            loop
+            playsInline
+            // Armed by the scroll (see applyProgress) rather than on load,
+            // so it never competes with the frame sequence.
+            preload="none"
+            poster="/bg/stage-lit.webp"
+            style={{ opacity: 0 }}
+            className="absolute inset-0 z-10 h-full w-full object-cover"
+          >
+            <source src="/hero/confetti-loop.webm" type="video/webm" />
+            <source src="/hero/confetti-loop.mp4" type="video/mp4" />
+          </video>
+        )}
 
         {reduced ? (
           // No canvas, no mask, no 5 MB sequence — just the lit stage.
