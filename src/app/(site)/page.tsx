@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import FadeInSection from "@/components/FadeInSection";
-import Hero from "@/components/Hero";
+import HeroCinematic from "@/components/HeroCinematic";
 import PageBackdrop from "@/components/PageBackdrop";
 import ProductCarousel from "@/components/ProductCarousel";
 import { getFeaturedCostumes } from "@/lib/costumes";
@@ -31,7 +31,7 @@ export default async function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <Hero />
+      <HeroCinematic />
 
       {featured.length > 0 && <ProductCarousel costumes={featured} />}
 

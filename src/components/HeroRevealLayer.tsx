@@ -9,9 +9,23 @@ const SPOTLIGHT_R = 260;
 // visibly dimmer after ~1 fade window, and is essentially gone after ~3.
 const FADE_TAU_MS = 900;
 
+// Where the stage lamp hangs in the artwork, as a fraction of the layer's
+// box — the scroll-driven flood of light spreads outward from there rather
+// than fading in flatly, so it reads as the spotlight opening up.
+const BEAM_ORIGIN = { x: 0.435, y: 0.02 };
+
 export interface HeroRevealLayerHandle {
   /** Paints a new reveal stamp at (x, y) — it fades on its own afterward. */
   paintAt: (x: number, y: number) => void;
+  /**
+   * A minimum reveal (0..1) re-applied every frame, so unlike `paintAt`
+   * stamps it never fades back out. Drives the scroll-linked "lights
+   * coming up" flood, which spreads from the lamp and, past ~0.8, covers
+   * the whole frame.
+   */
+  setFloor: (value: number) => void;
+  /** Opacity (0..1) of the whole reveal layer. */
+  setLayerOpacity: (value: number) => void;
 }
 
 const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
@@ -25,6 +39,7 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
     // what previously made the trail stutter instead of gliding.
     const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
     const imgRef = useRef<HTMLImageElement>(null);
+    const floorRef = useRef(0);
 
     useEffect(() => {
       maskCanvasRef.current = document.createElement("canvas");
@@ -128,6 +143,41 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
           maskCtx.fillStyle = `rgba(0,0,0,${eraseAlpha})`;
           maskCtx.fillRect(0, 0, mask.width, mask.height);
           maskCtx.restore();
+
+          // Re-stamped after the erase (never before it) so the floor is
+          // immune to the fade while the cursor trail above it still
+          // decays normally.
+          const floor = floorRef.current;
+          if (floor > 0) {
+            const cx = mask.width * BEAM_ORIGIN.x;
+            const cy = mask.height * BEAM_ORIGIN.y;
+            const maxR = Math.hypot(mask.width, mask.height) * 1.5;
+            // Eased so the light creeps out slowly at first and then
+            // rushes over the frame, like a lamp being brought up.
+            const radius = Math.max(1, floor * floor * maxR);
+            const gradient = maskCtx.createRadialGradient(
+              cx,
+              cy,
+              0,
+              cx,
+              cy,
+              radius
+            );
+            gradient.addColorStop(0, "rgba(255,255,255,1)");
+            gradient.addColorStop(0.65, "rgba(255,255,255,1)");
+            gradient.addColorStop(0.85, "rgba(255,255,255,0.5)");
+            gradient.addColorStop(1, "rgba(255,255,255,0)");
+            maskCtx.fillStyle = gradient;
+            maskCtx.fillRect(0, 0, mask.width, mask.height);
+
+            // The flood alone leaves the far corners short of a full
+            // reveal, so the tail of the scroll tops the whole frame up.
+            const flat = Math.min(Math.max((floor - 0.75) / 0.25, 0), 1);
+            if (flat > 0) {
+              maskCtx.fillStyle = `rgba(255,255,255,${flat})`;
+              maskCtx.fillRect(0, 0, mask.width, mask.height);
+            }
+          }
         }
 
         drawComposite();
@@ -168,6 +218,15 @@ const HeroRevealLayer = forwardRef<HeroRevealLayerHandle, { image: string }>(
         maskCtx.fill();
         // No immediate redraw needed — the fade loop above repaints every
         // frame anyway and will pick this stamp up on the next tick.
+      },
+
+      setFloor(value: number) {
+        floorRef.current = Math.min(Math.max(value, 0), 1);
+      },
+
+      setLayerOpacity(value: number) {
+        const wrapper = wrapperRef.current;
+        if (wrapper) wrapper.style.opacity = String(value);
       },
     }));
 

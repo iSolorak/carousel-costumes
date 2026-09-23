@@ -4,6 +4,12 @@ import { useEffect } from "react";
 import Lenis from "lenis";
 import { gsap, ScrollTrigger } from "@/lib/gsap";
 
+declare global {
+  interface Window {
+    __lenis?: Lenis;
+  }
+}
+
 export default function SmoothScroll({
   children,
 }: {
@@ -22,6 +28,10 @@ export default function SmoothScroll({
     });
 
     lenis.on("scroll", ScrollTrigger.update);
+    // Exposed so scroll-driven sections can drive the page from their own
+    // controls (arrows, dots, swipes) through the same smoothed scroller
+    // instead of fighting it with a native scrollTo.
+    window.__lenis = lenis;
 
     const raf = (time: number) => lenis.raf(time * 1000);
     gsap.ticker.add(raf);
@@ -36,6 +46,7 @@ export default function SmoothScroll({
       window.removeEventListener("app:lenis-stop", stop);
       window.removeEventListener("app:lenis-start", start);
       lenis.destroy();
+      delete window.__lenis;
       gsap.ticker.remove(raf);
     };
   }, []);
