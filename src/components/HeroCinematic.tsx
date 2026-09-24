@@ -42,8 +42,6 @@ const LOOP_FADE_FULL = 0.93;
 // is most of a screen of scrolling left to fetch it in.
 const LOOP_PRELOAD_AT = 0.5;
 
-const CHAPTERS = [];
-
 /**
  * The homepage's scroll-told opening: a pinned stage that plays a
  * scroll-scrubbed frame sequence (dark theatre → flooded with light and
@@ -65,7 +63,6 @@ export default function HeroCinematic() {
   const scrimRef = useRef<HTMLDivElement>(null);
   const railRef = useRef<HTMLSpanElement>(null);
   const hintRef = useRef<HTMLDivElement>(null);
-  const chapterRefs = useRef<Array<HTMLLIElement | null>>([]);
 
   const loopVideoRef = useRef<HTMLVideoElement>(null);
   const loopArmedRef = useRef(false);
@@ -230,12 +227,6 @@ export default function HeroCinematic() {
       el.style.pointerEvents = o > 0.9 ? "auto" : "none";
     });
 
-    chapterRefs.current.forEach((el, i) => {
-      if (!el) return;
-      const active = p >= bands[i][0] && p < (bands[i][1] ?? 1.01);
-      el.dataset.active = String(active);
-    });
-
     if (railRef.current) railRef.current.style.transform = `scaleY(${p})`;
     if (hintRef.current) {
       hintRef.current.style.opacity = (1 - ramp(p, 0, 0.06)).toFixed(3);
@@ -361,26 +352,6 @@ export default function HeroCinematic() {
           style={reduced ? { opacity: 0.55 } : { opacity: 0 }}
           className="pointer-events-none absolute inset-0 z-30 bg-[radial-gradient(ellipse_72%_58%_at_50%_44%,rgba(6,3,10,0.92)_0%,rgba(6,3,10,0.6)_46%,rgba(6,3,10,0)_78%)]"
         />
-
-        {/* Chapter rail */}
-        <ol
-          aria-hidden
-          className="pointer-events-none absolute top-1/2 left-5 z-40 hidden -translate-y-1/2 flex-col gap-3 md:flex"
-        >
-          {CHAPTERS.map((label, i) => (
-            <li
-              key={label}
-              ref={(el) => {
-                chapterRefs.current[i] = el;
-              }}
-              data-active={i === 0}
-              className="group flex items-center gap-3 text-[11px] tracking-[0.18em] text-white/45 uppercase transition-colors duration-500 data-[active=true]:text-white"
-            >
-              <span className="h-px w-5 bg-current transition-all duration-500 group-data-[active=true]:w-10" />
-              {String(i + 1).padStart(2, "0")} · {label}
-            </li>
-          ))}
-        </ol>
 
         {/* Progress rail */}
         <div
